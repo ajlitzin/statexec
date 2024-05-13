@@ -7,9 +7,11 @@ import (
 )
 
 type NetworkMetrics struct {
-	Interface      string
-	SentTotalBytes uint64
-	RecvTotalBytes uint64
+	Interface        string
+	SentTotalBytes   uint64
+	RecvTotalBytes   uint64
+	SentTotalPackets uint64
+	RecvTotalPackets uint64
 }
 
 func CollectNetworkMetrics() []NetworkMetrics {
@@ -21,7 +23,7 @@ func CollectNetworkMetrics() []NetworkMetrics {
 	}
 
 	for _, netIO := range netStat {
-		networkMetrics = append(networkMetrics, NetworkMetrics{Interface: netIO.Name, SentTotalBytes: netIO.BytesSent, RecvTotalBytes: netIO.BytesRecv})
+		networkMetrics = append(networkMetrics, NetworkMetrics{Interface: netIO.Name, SentTotalBytes: netIO.BytesSent, RecvTotalBytes: netIO.BytesRecv, SentTotalPackets: netIO.PacketsSent, RecvTotalPackets: netIO.PacketsRecv})
 	}
 
 	return networkMetrics

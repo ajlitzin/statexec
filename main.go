@@ -703,11 +703,28 @@ func computeSummary(firstMetricIndex int, lastMetricIndex int) string {
 		networkSumSentTotalBytesStop += networkMetric.SentTotalBytes
 		networkSumRecvTotalBytesStop += networkMetric.RecvTotalBytes
 	}
+	var networkSumSentTotalPacketsStart uint64 = 0
+	var networkSumRecvTotalPacketsStart uint64 = 0
+	for _, networkMetric := range metricStore[firstMetricIndex].network {
+		networkSumSentTotalPacketsStart += networkMetric.SentTotalPackets
+		networkSumRecvTotalPacketsStart += networkMetric.RecvTotalPackets
+	}
+	var networkSumSentTotalPacketsStop uint64 = 0
+	var networkSumRecvTotalPacketsStop uint64 = 0
+	for _, networkMetric := range metricStore[lastMetricIndex].network {
+		networkSumSentTotalPacketsStop += networkMetric.SentTotalPackets
+		networkSumRecvTotalPacketsStop += networkMetric.RecvTotalPackets
+	}
+
 	networkMeanRateSent := float64(networkSumSentTotalBytesStop-networkSumSentTotalBytesStart) / totalDurationSeconds
 	networkMeanRateRecv := float64(networkSumRecvTotalBytesStop-networkSumRecvTotalBytesStart) / totalDurationSeconds
+	networkMeanPacketRateSent := float64(networkSumSentTotalPacketsStop-networkSumSentTotalPacketsStart) / totalDurationSeconds
+	networkMeanPacketRateRecv := float64(networkSumRecvTotalPacketsStop-networkSumRecvTotalPacketsStart) / totalDurationSeconds
 
 	summaryBuffer += fmt.Sprintf(MetricPrefix+"summary_network_mean_sent_bytes_per_second{%s} %f %d\n", defaultLabels, networkMeanRateSent, timestamp)
 	summaryBuffer += fmt.Sprintf(MetricPrefix+"summary_network_mean_received_bytes_per_second{%s} %f %d\n", defaultLabels, networkMeanRateRecv, timestamp)
+	summaryBuffer += fmt.Sprintf(MetricPrefix+"summary_network_mean_sent_packets_per_second{%s} %f %d\n", defaultLabels, networkMeanPacketRateSent, timestamp)
+	summaryBuffer += fmt.Sprintf(MetricPrefix+"summary_network_mean_received_packets_per_second{%s} %f %d\n", defaultLabels, networkMeanPacketRateRecv, timestamp)
 
 	// Disk monitoring
 	var diskSumReadBytesTotalStart uint64 = 0
@@ -776,6 +793,10 @@ func writeResultToFile() error {
 # TYPE statexec_network_sent_bytes_total counter
 # HELP statexec_network_received_bytes_total Total received bytes
 # TYPE statexec_network_received_bytes_total counter
+# HELP statexec_network_sent_packets_total Total sent packets
+# TYPE statexec_network_sent_packets_total counter
+# HELP statexec_network_received_packets_total Total received packets
+# TYPE statexec_network_received_packets_total counter
 # HELP statexec_disk_read_bytes_total Total read bytes
 # TYPE statexec_disk_read_bytes_total counter
 # HELP statexec_disk_write_bytes_total Total written bytes
@@ -856,6 +877,8 @@ func writeResultToFile() error {
 			}
 			metricsBuffer += fmt.Sprintf(MetricPrefix+"network_sent_bytes_total{%s} %d %d\n", renderLabels(metricLabels), networkMetric.SentTotalBytes, metric.timestamp)
 			metricsBuffer += fmt.Sprintf(MetricPrefix+"network_received_bytes_total{%s} %d %d\n", renderLabels(metricLabels), networkMetric.RecvTotalBytes, metric.timestamp)
+			metricsBuffer += fmt.Sprintf(MetricPrefix+"network_sent_packets_total{%s} %d %d\n", renderLabels(metricLabels), networkMetric.SentTotalPackets, metric.timestamp)
+			metricsBuffer += fmt.Sprintf(MetricPrefix+"network_received_packets_total{%s} %d %d\n", renderLabels(metricLabels), networkMetric.RecvTotalPackets, metric.timestamp)
 		}
 
 		// Disk monitoring
